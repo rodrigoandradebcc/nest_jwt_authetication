@@ -1,0 +1,15 @@
+version: '3.3'
+
+services:
+  postgres:
+    image: postgres:13
+    restart: always
+    container_name: node-api
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=izi_fit
+    volumes:
+      - ./.volumes/database:/var/lib/postgresql/data
