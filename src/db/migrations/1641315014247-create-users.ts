@@ -18,10 +18,12 @@ export class createUsers1641315014247 implements MigrationInterface {
       {
         name: 'date_of_birth',
         type: 'timestamp with time zone',
+        isNullable: true,
       },
       {
         name: 'active',
         type: 'boolean',
+        isNullable: true,
       },
       {
         name: 'email',
@@ -35,6 +37,7 @@ export class createUsers1641315014247 implements MigrationInterface {
       {
         name: 'last_access',
         type: 'timestamp with time zone',
+        isNullable: true,
       },
       {
         name: 'created_at',

@@ -1,8 +1,10 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class createCourses1641264362840 implements MigrationInterface {
+export class createAccountValidation1641773771980
+  implements MigrationInterface
+{
   private table = new Table({
-    name: 'courses',
+    name: 'account_validation',
     columns: [
       {
         name: 'id',
@@ -12,23 +14,14 @@ export class createCourses1641264362840 implements MigrationInterface {
         default: 'uuid_generate_v4()',
       },
       {
-        name: 'name',
-        type: 'varchar',
-        length: '255',
-        isUnique: true,
-      },
-      {
-        name: 'description',
-        type: 'varchar',
-        length: '255',
-        isUnique: true,
+        name: 'code',
+        type: 'int',
+        isNullable: false,
       },
     ],
   });
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-
     await queryRunner.createTable(this.table);
   }
 

@@ -1,8 +1,13 @@
 import { Exclude } from 'class-transformer';
+import { AccountValidation } from 'src/modules/code-validate/entities/account-validation.entity';
+import { Role } from 'src/modules/role/entities/role.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,6 +35,13 @@ export class User {
 
   @Column('timestamp with time zone')
   last_access: Date;
+
+  @ManyToOne(() => Role, (role) => role.users, { cascade: true })
+  @JoinColumn({ name: 'role_id' })
+  role: Role;
+
+  @OneToOne(() => AccountValidation)
+  account_validation: AccountValidation;
 
   @CreateDateColumn()
   created_at: Date;
