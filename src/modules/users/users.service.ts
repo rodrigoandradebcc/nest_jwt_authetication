@@ -6,11 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { RoleService } from '../role/role.service';
 import { generateRandomInt } from 'src/utils/generate-code';
-import { getConnection } from 'typeorm';
 import { AccountValidation } from '../code-validate/entities/account-validation.entity';
 @Injectable()
 export class UsersService {
@@ -18,10 +17,9 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
 
-    @InjectRepository(AccountValidation)
-    private readonly accountValidationRepository: Repository<AccountValidation>,
-
     private readonly roleService: RoleService,
+
+    private connection: Connection,
   ) {}
 
   // async create(createCourseDTO: CreateUserDto) {
@@ -38,10 +36,8 @@ export class UsersService {
   // }
 
   async createUserRegister(createUserRegister: UserRegisterDto) {
-    const { email, full_name } = createUserRegister;
-    const connection = getConnection();
+    const { email } = createUserRegister;
 
-    console.log('te3stadno', email);
     const userExist = await this.checkEmail(email);
 
     if (userExist) {
@@ -51,13 +47,43 @@ export class UsersService {
       );
     }
 
-    const role = await this.roleService.getBySlug('user');
+    const newUser = await this.connection.transaction(
+      async (transactionalEntityManager) => {
+        const role = await this.roleService.getBySlug('user');
 
-    if (!role) {
-      throw new NotFoundException(`${role} not exist!`);
-    }
+        if (!role) {
+          throw new NotFoundException(`${role} not exist!`);
+        }
 
-    const queryRunner = connection.createQueryRunner();
+        const generatedCode = generateRandomInt(1000, 9999);
+
+        const userToCreate = this.usersRepository.create(createUserRegister);
+
+        userToCreate.role = role;
+
+        userToCreate.password = 'xpto_izifit';
+
+        const user = await transactionalEntityManager.save(userToCreate);
+
+        const userCreated = transactionalEntityManager.create(
+          AccountValidation,
+          {
+            user,
+            code: generatedCode,
+          },
+        );
+
+        const newUserTransaction = await transactionalEntityManager.save(
+          userCreated,
+        );
+
+        //ENVIAR EMAIL
+
+        return newUserTransaction.user;
+      },
+    );
+
+    return newUser;
   }
 
   async findOne(id: string) {
